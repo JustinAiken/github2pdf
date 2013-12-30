@@ -8,40 +8,45 @@ exports.page_processor = class PagePressor
   process: (urls) =>
     console.log "Processing..."
     interval = setInterval( =>
-      if not @loadInProgress and @resourceIndex < urls.length
+      if not @loadInProgress and (@resourceIndex < urls.length)
         @page.open urls[@resourceIndex]
-    , 250)
+    , 500)
 
     @page.onLoadStarted = =>
       @loadInProgress = true
-      @resourceIndex++
-      console.log "Loading page " + urls[(@resourceIndex + 1)]
+      console.log "[info] Loading page #{@resourceIndex + 1}: #{urls[(@resourceIndex)]}"
 
     @page.onLoadFinished = (status) =>
       if status is "success"
         @page.includeJs @jqueryResource, =>
-          @loadInProgress = false
-          elementClipRect = @page.evaluate((selector) ->
-            elementToRasterize = document.querySelector(selector)
-            unless elementToRasterize
-              return
-            else
-              elementRect = elementToRasterize.getBoundingClientRect()
-              top: elementRect.top
-              left: elementRect.left
-              width: elementRect.width
-              height: elementRect.height
-          , ".js-blob-data")
-          unless elementClipRect
-            console.log "[error] - Unable to locate element for provided selector! (.blob-wrapper)"
+          @load_clip_area(".js-blob-data")
+          unless @elementClipRect
+            @load_clip_area(".instapaper_body")
+          unless @elementClipRect
+            console.log "[error] - Unable to locate code on the page!"
           else
-            file_name = ("file_" + @resourceIndex + ".png")
-            console.log "[info] - Clipping rectangle for selection #{file_name} - #{JSON.stringify(elementClipRect)}"
-            @page.clipRect = elementClipRect
+            file_name = ("file_" + (@resourceIndex + 1) + ".png")
+            console.log "[info] - Clipping rectangle for selection #{file_name} - #{JSON.stringify(@elementClipRect)}"
+            @page.clipRect = @elementClipRect
             @page.render file_name
-            console.log "Saved #{file_name}"
+            console.log "[info] Saved #{file_name}"
+            @loadInProgress = false
+            @resourceIndex++
             if @resourceIndex is urls.length
-              console.log "image render complete!"
+              console.log "[info] image render complete!"
               phantom.exit()
       else
-        console.log "ERROR LOADING PAGE " + @resourceIndex + ": " + urls[@resourceIndex]
+        console.log "[error] Error loading page #{@resourceIndex + 1}: #{urls[(@resourceIndex)]}"
+
+  load_clip_area: (selector_name) =>
+    @elementClipRect = @page.evaluate((selector) ->
+      elementToRasterize = document.querySelector(selector)
+      unless elementToRasterize
+        return
+      else
+        elementRect = elementToRasterize.getBoundingClientRect()
+        top: elementRect.top
+        left: elementRect.left
+        width: elementRect.width
+        height: elementRect.height
+    , selector_name)
