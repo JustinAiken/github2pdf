@@ -1,7 +1,7 @@
 page = require("webpage").create()
 page.viewportSize =
   width: 1920
-  height: 1080
+  height: 10080
 #TODO: UNCOMMENT THIS WHEN YOU CAN .PDF and still clipRect
 # page.paperSize =
 #   format: "A4"
