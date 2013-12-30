@@ -27,11 +27,10 @@ exports.page_processor = class PagePressor
           unless @elementClipRect
             console.log "[error] - Unable to locate code on the page!"
           else
-            file_name = ("file_" + (@resourceIndex + 1) + ".png")
-            console.log "[info] - Clipping rectangle for selection #{file_name} - #{JSON.stringify(@elementClipRect)}"
+            console.log "[info] - Clipping rectangle for #{@file_name()} - #{JSON.stringify(@elementClipRect)}"
             @page.clipRect = @elementClipRect
-            @page.render file_name
-            console.log "[info] Saved #{file_name}"
+            @page.render @file_name()
+            console.log "[info] Saved #{@file_name()}"
             @loadInProgress = false
             @resourceIndex++
             if @resourceIndex is urls.length
@@ -65,3 +64,6 @@ exports.page_processor = class PagePressor
 
   get_title: ->
     return @page.url.split("blob/master/")[1]
+
+  file_name: ->
+    return "file_#{@resourceIndex + 1}.png"
