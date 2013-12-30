@@ -19,8 +19,10 @@ exports.page_processor = class PagePressor
     @page.onLoadFinished = (status) =>
       if status is "success"
         @page.includeJs @jqueryResource, =>
+          @add_title(@get_title(), '.js-blob-data')
           @load_clip_area(".js-blob-data")
           unless @elementClipRect
+            @add_title(@get_title(), '.instapaper_body')
             @load_clip_area(".instapaper_body")
           unless @elementClipRect
             console.log "[error] - Unable to locate code on the page!"
@@ -50,3 +52,16 @@ exports.page_processor = class PagePressor
         width: elementRect.width
         height: elementRect.height
     , selector_name)
+
+  add_title: (title, selector) =>
+    eval "function workaround(){ window.my_title = \"" + title + "\";}"
+    @page.evaluate workaround
+
+    eval "function workaround2(){ window.my_selector = \"" + selector + "\";}"
+    @page.evaluate workaround2
+
+    @page.evaluate =>
+      $(window.my_selector).prepend "<center><h3> #{window.my_title} </h3></center>"
+
+  get_title: ->
+    return @page.url.split("blob/master/")[1]
