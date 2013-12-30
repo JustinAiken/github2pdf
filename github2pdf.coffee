@@ -15,7 +15,16 @@ fetcher.fetch_paths()
 
 just_wait = ->
   setTimeout (->
+
+    get_ext     = /(?:\.([^.]+))?$/
+    ignore_exts = /png|gitkeep|log|ico|jpg|gif/
+
+    urls = fetcher.urls.filter (url) ->
+      file_ext = get_ext.exec(url)[1]
+      return true unless file_ext
+      ignore_exts.exec(file_ext) == null
+
     processer = new page_processor.page_processor(page_maker.page)
-    processer.process(fetcher.urls)
+    processer.process(urls)
   ), 2000
 just_wait()
